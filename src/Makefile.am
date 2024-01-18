@@ -18,7 +18,7 @@ dynamic_array_test_LDADD = \
 
 TEST_LOG_DRIVER = \
     env AM_TAP_AWK='@AWK@' @SHELL@ \
-    @abs_top_srcdir@/tap-driver.sh
+    @abs_top_srcdir@/build/autotools/aux/tap-driver.sh
 
 TESTS = $(check_PROGRAMS)
 EXTRA_DIST = $(check_PROGRAMS)
