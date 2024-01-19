@@ -4,6 +4,8 @@
 #include <stdlib.h>
 #include <tap.h>
 
+#define ARRAY_LEN(A) (sizeof(A) / sizeof(*A))
+
 static int create(void) {
     struct dynamic_array *da = NULL;
     int err;
@@ -37,6 +39,42 @@ static int append(void) {
         assert(err == 0);
         assert(element == i + 1);
         assert(ds_da_len(da) == appends);
+    }
+
+    ds_da_free(da);
+    return 0;
+}
+
+static int append_ref(void) {
+    struct dynamic_array *da;
+    int appends[25];
+    int err;
+
+    err = ds_da_create(sizeof(int *), &da);
+    assert(err == 0);
+
+    for (int i = 0; i < ARRAY_LEN(appends); i++) {
+        appends[i] = i + 1;
+    }
+
+    for (int i = 0; i < ARRAY_LEN(appends); i++) {
+        int *ptr;
+
+        ptr = &appends[i];
+        err = ds_da_append(da, &ptr);
+        assert(err == 0);
+        assert(ds_da_len(da) == i + 1);
+    }
+
+    for (int i = 0; i < ARRAY_LEN(appends); i++) {
+        int *ptr;
+
+        ptr = NULL;
+        err = ds_da_get_value(da, i, &ptr);
+        assert(err == 0);
+        assert(ptr == &appends[i]);
+        assert(*ptr == appends[i]);
+        assert(ds_da_len(da) == ARRAY_LEN(appends));
     }
 
     ds_da_free(da);
@@ -109,6 +147,7 @@ static int pop_value(void) {
 int main(void) {
     tap_easy_register(create, NULL);
     tap_easy_register(append, NULL);
+    tap_easy_register(append_ref, NULL);
     tap_easy_register(pop_value, NULL);
     tap_easy_runall_and_cleanup();
 }
