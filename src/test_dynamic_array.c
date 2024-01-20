@@ -244,10 +244,10 @@ static int pop_value(void) {
 }
 
 int main(void) {
-    tap_easy_register(create, NULL);
-    tap_easy_register(append, NULL);
-    tap_easy_register(append_ref, NULL);
-    tap_easy_register(swap, NULL);
-    tap_easy_register(pop_value, NULL);
+    tap_easy_register(create, "Checks creation");
+    tap_easy_register(append, "Checks appending values");
+    tap_easy_register(append_ref, "Checks appending pointers");
+    tap_easy_register(swap, "Checks swapping indices");
+    tap_easy_register(pop_value, "Check popping elements");
     tap_easy_runall_and_cleanup();
 }
