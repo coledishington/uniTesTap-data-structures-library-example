@@ -1,6 +1,5 @@
 #include <assert.h>
 #include <data_structures.h>
-#include <stddef.h>
 #include <stdlib.h>
 #include <tap.h>
 

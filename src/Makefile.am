@@ -7,12 +7,17 @@ AM_CPPFLAGS = -I $(INCLUDE_PATH) -I $(TAP_INCLUDE_PATH)
 include_HEADERS = $(INCLUDE_PATH)/data_structures.h
 
 lib_LTLIBRARIES = libdata_structures.la
-libdata_structures_la_SOURCES = dynamic_array.c
+libdata_structures_la_SOURCES = dynamic_array.c heap.c
 
-check_PROGRAMS = dynamic_array.test
+check_PROGRAMS = dynamic_array.test heap.test
 
 dynamic_array_test_SOURCES = test_dynamic_array.c
 dynamic_array_test_LDADD = \
+    @abs_top_builddir@/uniTesTap/tapcore/libuniTesTap.la \
+    libdata_structures.la
+
+heap_test_SOURCES = test_heap.c
+heap_test_LDADD = \
     @abs_top_builddir@/uniTesTap/tapcore/libuniTesTap.la \
     libdata_structures.la
 

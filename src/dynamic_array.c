@@ -1,23 +1,22 @@
 #include <data_structures.h>
 #include <errno.h>
 #include <math.h>
-#include <stddef.h>
-#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/types.h>
 
 #define INITAL_SIZE (1 << 5)
 #define GROWTH_FACTOR 1.5f
 
-static inline size_t get_idx(struct dynamic_array *da, size_t idx) {
+static inline size_t get_idx(const struct dynamic_array *da, size_t idx) {
     return idx * da->esize;
 }
 
-static inline void *get_ptr(struct dynamic_array *da, size_t idx) {
+static inline void *get_ptr(const struct dynamic_array *da, size_t idx) {
     return da->array + get_idx(da, idx);
 }
 
-static inline void get_value(struct dynamic_array *da, size_t idx,
+static inline void get_value(const struct dynamic_array *da, size_t idx,
                              void *element) {
     memcpy(element, get_ptr(da, idx), da->esize);
 }
@@ -54,33 +53,43 @@ static int ds_da_grow(struct dynamic_array *da) {
     return 0;
 }
 
+int ds_da_init(size_t esize, struct dynamic_array *da) {
+    char *array;
+
+    array = malloc(esize * INITAL_SIZE);
+    if (!array) {
+        return errno;
+    }
+
+    da->array = array;
+    da->psize = INITAL_SIZE;
+    da->esize = esize;
+    da->lsize = 0;
+    return 0;
+}
+
 int ds_da_create(size_t esize, struct dynamic_array **d_da) {
     struct dynamic_array *da;
+    int err;
 
     da = malloc(sizeof(*da));
     if (!da) {
         return errno;
     }
 
-    da->array = malloc(esize * INITAL_SIZE);
-    if (!da->array) {
-        int err;
-
-        err = errno;
+    err = ds_da_init(esize, da);
+    if (err != 0) {
         free(da);
         return err;
     }
 
-    da->psize = INITAL_SIZE;
-    da->esize = esize;
-    da->lsize = 0;
     *d_da = da;
     return 0;
 }
 
 size_t ds_da_len(const struct dynamic_array *da) { return da->lsize; }
 
-int ds_da_get_value(struct dynamic_array *da, size_t idx, void *element) {
+int ds_da_get_value(const struct dynamic_array *da, size_t idx, void *element) {
     if (idx >= da->lsize) {
         return EINVAL;
     }
