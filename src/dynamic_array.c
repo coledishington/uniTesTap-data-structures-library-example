@@ -9,6 +9,29 @@
 #define INITAL_SIZE (1 << 5)
 #define GROWTH_FACTOR 1.5f
 
+static inline size_t get_idx(struct dynamic_array *da, size_t idx) {
+    return idx * da->esize;
+}
+
+static inline void *get_ptr(struct dynamic_array *da, size_t idx) {
+    return da->array + get_idx(da, idx);
+}
+
+static inline void get_value(struct dynamic_array *da, size_t idx,
+                             void *element) {
+    memcpy(element, get_ptr(da, idx), da->esize);
+}
+
+static inline void set_value(struct dynamic_array *da, size_t idx,
+                             void *element) {
+    memcpy(get_ptr(da, idx), element, da->esize);
+}
+
+static inline void clear_values(struct dynamic_array *da, size_t idx,
+                                size_t n) {
+    memset(get_ptr(da, idx), 0, n * da->esize);
+}
+
 static int ds_da_grow(struct dynamic_array *da) {
     size_t physical_size = SIZE_MAX;
     double d_physical_size;
@@ -26,8 +49,7 @@ static int ds_da_grow(struct dynamic_array *da) {
     }
 
     da->array = new_array;
-    memset(da->array + (da->psize * da->esize), 0,
-           (physical_size - da->psize) * da->esize);
+    clear_values(da, da->psize, physical_size - da->psize);
     da->psize = physical_size;
     return 0;
 }
@@ -59,31 +81,26 @@ int ds_da_create(size_t esize, struct dynamic_array **d_da) {
 size_t ds_da_len(const struct dynamic_array *da) { return da->lsize; }
 
 int ds_da_get_value(struct dynamic_array *da, size_t idx, void *element) {
-    char *pos;
-
     if (idx >= da->lsize) {
         return EINVAL;
     }
 
-    pos = da->array + (idx * da->esize);
-    memcpy(element, pos, da->esize);
+    get_value(da, idx, element);
     return 0;
 }
 
 int ds_da_append(struct dynamic_array *da, void *element) {
-    int err = 0;
-    size_t idx;
-
     if (da->lsize >= da->psize) {
+        int err;
+
         err = ds_da_grow(da);
         if (err != 0) {
             return err;
         }
     }
 
-    idx = da->lsize;
+    set_value(da, da->lsize, element);
     da->lsize++;
-    memcpy(da->array + (idx * da->esize), element, da->esize);
     return 0;
 }
 
@@ -99,7 +116,7 @@ int ds_da_pop(struct dynamic_array *da, void *element) {
     if (element) {
         ds_da_get_value(da, idx, element);
     }
-    memset(da->array + (idx * da->esize), 0, da->esize);
+    clear_values(da, idx, 1);
     da->lsize--;
     return 0;
 }
