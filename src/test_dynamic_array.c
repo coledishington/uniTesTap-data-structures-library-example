@@ -29,16 +29,15 @@ static int append(void) {
         err = ds_da_append(da, &i);
         assert(err == 0);
         assert(ds_da_len(da) == i);
-    }
 
-    for (int i = 0; i < appends; i++) {
-        int element;
+        /* Validate all elements are still correct */
+        for (int idx = 0; idx < i; idx++) {
+            int element;
 
-        element = -1;
-        err = ds_da_get_value(da, i, &element);
-        assert(err == 0);
-        assert(element == i + 1);
-        assert(ds_da_len(da) == appends);
+            err = ds_da_get_value(da, idx, &element);
+            assert(err == 0);
+            assert(element == idx + 1);
+        }
     }
 
     ds_da_free(da);
@@ -64,17 +63,17 @@ static int append_ref(void) {
         err = ds_da_append(da, &ptr);
         assert(err == 0);
         assert(ds_da_len(da) == i + 1);
-    }
 
-    for (int i = 0; i < ARRAY_LEN(appends); i++) {
-        int *ptr;
+        /* Validate all elements are still correct */
+        for (int j = 0; j <= i; j++) {
+            int *ptr;
 
-        ptr = NULL;
-        err = ds_da_get_value(da, i, &ptr);
-        assert(err == 0);
-        assert(ptr == &appends[i]);
-        assert(*ptr == appends[i]);
-        assert(ds_da_len(da) == ARRAY_LEN(appends));
+            ptr = NULL;
+            err = ds_da_get_value(da, j, &ptr);
+            assert(err == 0);
+            assert(ptr == &appends[j]);
+            assert(*ptr == appends[j]);
+        }
     }
 
     ds_da_free(da);
@@ -84,6 +83,9 @@ static int append_ref(void) {
 static int pop_value(void) {
     struct dynamic_array *da;
     int append_value;
+    int check_value;
+    int append_idx;
+    int check_idx;
     int pop_value;
     bool err;
 
@@ -108,27 +110,61 @@ static int pop_value(void) {
     assert(append_value == pop_value);
 
     /* Many Inserts */
-    for (append_value = 1; append_value < 10; append_value++) {
+    for (append_idx = 0; append_idx < 10; append_idx++) {
+        append_value = append_idx + 1;
         err = ds_da_append(da, &append_value);
         assert(err == 0);
-        assert(ds_da_len(da) == append_value);
+        assert(ds_da_len(da) == append_idx + 1);
+
+        /* Check all values */
+        for (check_idx = 0; check_idx <= append_idx; check_idx++) {
+            check_value = -1;
+            err = ds_da_get_value(da, check_idx, &check_value);
+            assert(err == 0);
+            assert(check_value == check_idx + 1);
+        }
 
         err = ds_da_pop(da, &pop_value);
         assert(err == 0);
         assert(ds_da_len(da) == append_value - 1);
         assert(append_value == pop_value);
 
+        /* Check all values */
+        for (check_idx = 0; check_idx < append_idx; check_idx++) {
+            check_value = -1;
+            err = ds_da_get_value(da, check_idx, &check_value);
+            assert(err == 0);
+            assert(check_value == check_idx + 1);
+        }
+
         err = ds_da_append(da, &append_value);
         assert(err == 0);
         assert(ds_da_len(da) == append_value);
+
+        /* Check all values */
+        for (check_idx = 0; check_idx <= append_idx; check_idx++) {
+            check_value = -1;
+            err = ds_da_get_value(da, check_idx, &check_value);
+            assert(err == 0);
+            assert(check_value == check_idx + 1);
+        }
     }
 
     /* Pop down to zero */
-    for (append_value = 9; append_value > 0; append_value--) {
+    for (append_idx = 9; append_idx >= 0; append_idx--) {
         err = ds_da_pop(da, &pop_value);
         assert(err == 0);
-        assert(ds_da_len(da) == append_value - 1);
+        assert(ds_da_len(da) == append_idx);
+        append_value = append_idx + 1;
         assert(append_value == pop_value);
+
+        /* Check all values */
+        for (check_idx = 0; check_idx < append_idx - 1; check_idx++) {
+            check_value = -1;
+            err = ds_da_get_value(da, check_idx, &check_value);
+            assert(err == 0);
+            assert(check_value == check_idx + 1);
+        }
     }
 
     /* Pop on zero */
