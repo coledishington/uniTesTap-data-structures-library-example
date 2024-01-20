@@ -70,6 +70,17 @@ int ds_da_append(struct dynamic_array *da, void *element);
 int ds_da_pop(struct dynamic_array *da, void *element);
 
 /**
+ * Swaps the two elements in a dynamic array, at the specified indices.
+ *
+ * @param[in] da is the dynamic array.
+ * @param[in] idx1 is the first position in the dynamic array.
+ * @param[in] idx2 is the second position in the dynamic array.
+ *
+ * @returns 0 on success, otherwise errno-like value.
+ */
+int ds_da_swap(struct dynamic_array *da, size_t idx1, size_t idx2);
+
+/**
  * Free the memory allocated for the dynamic array.
  *
  * @param[in] da is the dynamic array to freed.

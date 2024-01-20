@@ -80,6 +80,69 @@ static int append_ref(void) {
     return 0;
 }
 
+static int swap(void) {
+    struct dynamic_array *da;
+    int n_elements = 24;
+    int check_value;
+    int element;
+    int err;
+
+    err = ds_da_create(sizeof(int), &da);
+    assert(err == 0);
+
+    for (int i = 0; i < n_elements; i++) {
+        int set_value;
+
+        set_value = i + 1;
+        err = ds_da_append(da, &set_value);
+        assert(err == 0);
+        assert(ds_da_len(da) == i + 1);
+    }
+
+    /* Reverse the list, step-by-step */
+    for (int i = 0; i < n_elements / 2; i++) {
+        err = ds_da_swap(da, i, n_elements - i - 1);
+        assert(err == 0);
+        assert(ds_da_len(da) == n_elements);
+
+        /* Check front that has been reversed */
+        for (int idx = 0; idx < i + 1; idx++) {
+            check_value = n_elements - idx;
+            err = ds_da_get_value(da, idx, &element);
+            assert(err == 0);
+            assert(element == check_value);
+        }
+
+        /* Check middle that hasn't been reversed */
+        for (int idx = i + 1; idx < n_elements - i - 1; idx++) {
+            check_value = idx + 1;
+            err = ds_da_get_value(da, idx, &element);
+            assert(err == 0);
+            assert(element == check_value);
+        }
+
+        /* Check end that has been reversed */
+        for (int idx = n_elements - i - 1; idx < n_elements; idx++) {
+            check_value = n_elements - idx;
+            err = ds_da_get_value(da, idx, &element);
+            assert(err == 0);
+            assert(element == check_value);
+        }
+    }
+
+    /* Validate all elements are still correct */
+    check_value = 1;
+    for (int idx = n_elements - 1; idx >= 0; idx--) {
+        err = ds_da_get_value(da, idx, &element);
+        assert(err == 0);
+        assert(element == check_value);
+        check_value++;
+    }
+
+    ds_da_free(da);
+    return 0;
+}
+
 static int pop_value(void) {
     struct dynamic_array *da;
     int append_value;
@@ -184,6 +247,7 @@ int main(void) {
     tap_easy_register(create, NULL);
     tap_easy_register(append, NULL);
     tap_easy_register(append_ref, NULL);
+    tap_easy_register(swap, NULL);
     tap_easy_register(pop_value, NULL);
     tap_easy_runall_and_cleanup();
 }

@@ -104,6 +104,28 @@ int ds_da_append(struct dynamic_array *da, void *element) {
     return 0;
 }
 
+int ds_da_swap(struct dynamic_array *da, size_t idx1, size_t idx2) {
+    if (idx1 >= da->lsize || idx2 >= da->lsize) {
+        return EINVAL;
+    }
+
+    if (da->lsize == da->psize) {
+        int err;
+
+        err = ds_da_grow(da);
+        if (err != 0) {
+            return err;
+        }
+    }
+
+    /* Use a free slot at the end for the temporary position */
+    set_value(da, da->psize - 1, get_ptr(da, idx1));
+    set_value(da, idx1, get_ptr(da, idx2));
+    set_value(da, idx2, get_ptr(da, da->psize - 1));
+    clear_values(da, da->psize - 1, 1);
+    return 0;
+}
+
 int ds_da_pop(struct dynamic_array *da, void *element) {
     size_t len, idx;
 
